@@ -1,3 +1,8 @@
+export N8N_DEV_RELOAD=true
+export N8N_LOG_LEVEL=verbose
+...from the node path
+npm run dev
+
 ![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
 
 # n8n-nodes-starter
