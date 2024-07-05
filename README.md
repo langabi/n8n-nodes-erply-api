@@ -28,7 +28,10 @@ Tested on version 1.47.1
 
 ## Usage
 
-## Context
+![image](https://github.com/ashleygeorgeclarke/n8n-nodes-erply-api/assets/4650777/5e8a8061-be5d-486f-81db-d896ea20e3e1)
+
+
+## Limitations
 
 All authenticated requests get a new sessionKey and are not reused even though an expiry is provided. Erply returns status code 400 when a sessionKey is expired. A current limitation of n8n requires a 401 response to trigger a token refresh.
 
