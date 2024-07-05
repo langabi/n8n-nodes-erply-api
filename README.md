@@ -28,7 +28,11 @@ Tested on version 1.47.1
 
 ## Usage
 
+## Context
 
+All authenticated requests get a new sessionKey and are not reused even though an expiry is provided. Erply returns status code 400 when a sessionKey is expired. A current limitation of n8n requires a 401 response to trigger a token refresh.
+
+ErplyService uses [getServiceEndpoints](https://learn-api.erply.com/new-apis) to list the correct endpoint base URLs for your account code. According to Erply, these service endpoints can change without prior notice. 
 
 ## Resources
 
