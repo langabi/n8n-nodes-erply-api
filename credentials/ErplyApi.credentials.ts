@@ -41,23 +41,11 @@ export class ErplyApi implements ICredentialType {
 		credentials: ICredentialDataDecryptedObject,
 		requestOptions: IHttpRequestOptions,
 	): Promise<IHttpRequestOptions> {
-
-		// const url = encodeURI(`https://${credentials.clientCode}.erply.com/api?clientCode=${credentials.clientCode}&username=${credentials.username}&password=${credentials.password}&request=verifyUser&doNotGenerateIdentityToken=1`)
-
-		// const authResp = await fetch(url, {
-		// 	method: 'POST',
-		// })
-
-		// if (!authResp.ok) {
-		// 	throw new Error('Authentication failed');
-		// }
-
-		// const authData = await authResp.json() as any;
-
-		// const sessionKey = authData.records[0].sessionKey;
+		// has to be run for each request even though sessionKey has an expiry
+		// because the expirable property only triggers on a 401 response and erply returns 400
 		const sessionKey = await getSessionKey(credentials)
 
-		//api URL
+		// erply.com/api requires creds in the query string, all others (pim etc) are in the header
 		const isApiUrl = requestOptions.url.includes("erply.com/api")
 
 		if (isApiUrl) {
@@ -69,7 +57,6 @@ export class ErplyApi implements ICredentialType {
 			return requestOptions;
 		}
 
-		//all other requests need the clientCode and sessionKey in the header
 		requestOptions.headers = {
 			...requestOptions.headers,
 			"clientCode": credentials.clientCode,

@@ -18,7 +18,7 @@ export class ErplyTrigger implements INodeType {
 			name: 'Erply Trigger',
 		},
 
-		group: ['input'],
+		group: ['trigger'],
 		version: 1,
 		description: 'Consume Erply PIM',
 		inputs: [],

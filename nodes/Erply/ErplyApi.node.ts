@@ -21,7 +21,7 @@ export class ErplyApi implements INodeType {
 		description: 'Consume Erply API',
 		inputs: ['main'],
 		outputs: ['main'],
-		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
+		subtitle: '={{$parameter["request"]}}',
 		requestDefaults: {
 			method: 'POST',
 		},
@@ -65,7 +65,7 @@ export class ErplyApi implements INodeType {
 				routing: {
 					request: {
 						//@ts-ignore
-						qs: '={{ $parameter.parameters.parameter.smartJoin("key", "value") }}'
+						qs: '={{ $parameter.parameters.parameter ? $parameter.parameters.parameter.smartJoin("key", "value") : undefined }}',
 					}
 				},
 				options: [
