@@ -20,10 +20,10 @@ export class ErplyTrigger implements INodeType {
 
 		group: ['trigger'],
 		version: 1,
-		description: 'Consume Erply PIM',
+		description: 'Use Erply Webhooks',
 		inputs: [],
 		outputs: ['main'],
-		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
+		subtitle: '={{$parameter["action"] + ": " + $parameter["table"]}}',
 
 		webhooks: [
 			{
@@ -73,12 +73,6 @@ export class ErplyTrigger implements INodeType {
 				}
 			},
 			{
-				displayName: 'Disabled',
-				name: 'disabled',
-				type: 'boolean',
-				default: false,
-			},
-			{
 				displayName: 'Base URL',
 				name: 'baseUrl',
 				type: 'string',
@@ -97,12 +91,13 @@ export class ErplyTrigger implements INodeType {
 				return resp.some(obj => (obj.action === action && obj.table === table))
 			},
 			async create(this: IHookFunctions): Promise<boolean> {
-				const payload = this.getNode().parameters as {table: string, action: string, disabled: boolean, secret: string}
+				const payload = this.getNode().parameters as {table: string, action: string, secret: string}
 				const endpoint = this.getNodeWebhookUrl('default');
 				try {
 					await apiWebhookRequest.call(this, 'POST', '/v1/webhook-configuration', {
 						...payload,
-						endpoint
+						endpoint,
+						disabled: false
 					})
 				} catch (error) {
 					return false
@@ -131,8 +126,12 @@ export class ErplyTrigger implements INodeType {
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		const items = this.getBodyData().items as IDataObject[]
+
 		return {
-			workflowData: [ this.helpers.returnJsonArray(items) ]
+			workflowData: [ this.helpers.returnJsonArray(items) ],
+			webhookResponse: {
+				status: 200
+			}
 		}
 	}
 }

@@ -52,17 +52,26 @@ export async function getEndpointPaths(
 export async function getSessionKey(credentials: ICredentialDataDecryptedObject): Promise<string> {
 	const url = encodeURI(`https://${credentials.clientCode}.erply.com/api?clientCode=${credentials.clientCode}&username=${credentials.username}&password=${credentials.password}&request=verifyUser&doNotGenerateIdentityToken=1`)
 
-		const authResp = await fetch(url, {
+	let authResp: Response;
+
+	try {
+		authResp = await fetch(url, {
 			method: 'POST',
 		})
+	} catch (error) {
+		throw new Error('Could not authenticate', {
+			cause: error
+		})
+	}
 
-		if (!authResp.ok) {
-			throw new Error('Authentication failed');
-		}
 
-		const authData = await authResp.json() as any;
+	if (!authResp.ok) {
+		throw new Error('Could not authenticate')
+	}
 
-		return authData.records[0].sessionKey;
+	const authData = await authResp.json() as any;
+
+	return authData.records[0].sessionKey;
 }
 
 export async function apiWebhookRequest(
