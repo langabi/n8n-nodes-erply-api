@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "A complete n8n node package for all Erply APIs and webhooks",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "erply"
   ],
   "license": "MIT",
   "homepage": "",
