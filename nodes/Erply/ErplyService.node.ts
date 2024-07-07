@@ -63,7 +63,6 @@ export class ErplyService implements INodeType {
 						service: [undefined, null, ''],
 					},
 				},
-				required: true,
 			},
 			{
 				displayName: 'Endpoint Path',
@@ -83,6 +82,7 @@ export class ErplyService implements INodeType {
 						url: '={{$parameter["endpointPath"]}}',
 					},
 				},
+				required: true,
 			},
 			{
 				displayName: 'Method',
