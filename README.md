@@ -37,6 +37,8 @@ Any calls to the [https://*.erply.com/api](https://learn-api.erply.com/requests)
 
 ### Erply Service
 
+All service APIs (PIM, inventory etc) are handled by Erply Service.
+
 <img width="645" alt="image" src="https://github.com/ashleygeorgeclarke/n8n-nodes-erply-api/assets/4650777/80a4aa1c-c51f-4dfb-81a5-1b00e3841425">
 
 The Endpoint Path Select options are dynamically fetched from the respective service api swagger doc json files. The use of this is simply a convenience and is not strictly necessary to use. 
