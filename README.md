@@ -27,10 +27,13 @@ Ensure that your Erply user has API access enabled.
 Tested on version 1.47.1
 
 ## Usage
+<img width="645" alt="image" src="https://github.com/ashleygeorgeclarke/n8n-nodes-erply-api/assets/4650777/80a4aa1c-c51f-4dfb-81a5-1b00e3841425">
 
+The Endpoint Path Select options are dynamically fetched from the respective service api swagger doc json files. The use of this is simply a convenience and is not strictly necessary to use. 
 
 ![image](https://github.com/ashleygeorgeclarke/n8n-nodes-erply-api/assets/4650777/5e8a8061-be5d-486f-81db-d896ea20e3e1)
 
+If the path contains a replacable components ({ids} etc), use .replace("{ids}", "myvalue") to set the desired values.
 
 ## Limitations
 
