@@ -27,6 +27,16 @@ Ensure that your Erply user has API access enabled.
 Tested on version 1.47.1
 
 ## Usage
+
+<img width="633" alt="image" src="https://github.com/ashleygeorgeclarke/n8n-nodes-erply-api/assets/4650777/a71a2ad4-921a-40a3-ac11-bba77b7c59c2">
+
+
+### Erply API
+
+Any calls to the [https://*.erply.com/api](https://learn-api.erply.com/requests) endpoint are handled by the Erply API node.
+
+### Erply Service
+
 <img width="645" alt="image" src="https://github.com/ashleygeorgeclarke/n8n-nodes-erply-api/assets/4650777/80a4aa1c-c51f-4dfb-81a5-1b00e3841425">
 
 The Endpoint Path Select options are dynamically fetched from the respective service api swagger doc json files. The use of this is simply a convenience and is not strictly necessary to use. 
@@ -34,6 +44,10 @@ The Endpoint Path Select options are dynamically fetched from the respective ser
 ![image](https://github.com/ashleygeorgeclarke/n8n-nodes-erply-api/assets/4650777/5e8a8061-be5d-486f-81db-d896ea20e3e1)
 
 If the path contains a replacable components ({ids} etc), use .replace("{ids}", "myvalue") to set the desired values.
+
+### Erply Trigger
+
+[These webhooks](https://wiki.erply.com/en/article/760-introduction) will be dynamically created/destroyed, so there's no need to create them manually before use.
 
 ## Limitations
 
