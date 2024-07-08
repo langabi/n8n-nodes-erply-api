@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-erply-api",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A complete n8n node package for all Erply APIs and webhooks",
   "keywords": [
     "n8n-community-node-package",
@@ -31,7 +31,7 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/NasaPicsApi.credentials.js"
+      "dist/credentials/ErplyApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/Erply/ErplyService.node.js",
@@ -50,8 +50,5 @@
   },
   "peerDependencies": {
     "n8n-workflow": "*"
-  },
-  "dependencies": {
-    "jsonwebtoken": "^9.0.2"
   }
 }
