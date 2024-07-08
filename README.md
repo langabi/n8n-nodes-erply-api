@@ -10,9 +10,8 @@ Erply is a multi store, retail chain and franchise point-of-sale platform.
 [Installation](#installation)   
 [Credentials](#credentials)
 [Compatibility](#compatibility)  
-[Usage](#usage) 
-[Resources](#resources)  
-[Version history](#version-history)  <!-- delete if not using this section -->  
+[Usage](#usage)     
+[Resources](#resources)        
 
 ## Installation
 
