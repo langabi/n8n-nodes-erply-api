@@ -8,7 +8,7 @@ Erply is a multi store, retail chain and franchise point-of-sale platform.
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
 [Installation](#installation)   
-[Credentials](#credentials)
+[Credentials](#credentials)    
 [Compatibility](#compatibility)  
 [Usage](#usage)   
 [Limitations](#limitations)      
