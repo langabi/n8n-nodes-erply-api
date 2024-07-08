@@ -164,12 +164,6 @@ export class ErplyService implements INodeType {
 					{
 						displayName: 'Parameter',
 						name: 'parameter',
-						routing: {
-							request: {
-								//@ts-ignore
-								// qs: '={{ $parameter.parameters.parameter.smartJoin("key", "value") }}'
-							},
-						},
 
 						values: [
 							{
