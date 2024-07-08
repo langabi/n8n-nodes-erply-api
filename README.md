@@ -57,6 +57,8 @@ All authenticated requests get a new sessionKey and are not reused even though a
 
 ErplyService should use [getServiceEndpoints](https://learn-api.erply.com/new-apis) as an input to list the correct endpoint base URLs for your account code. According to Erply, these service endpoints can change without prior notice.
 
+Rate limiting is not currently handled.
+
 ## Resources
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)

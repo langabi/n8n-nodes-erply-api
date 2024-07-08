@@ -126,6 +126,27 @@ export class ErplyService implements INodeType {
 				},
 			},
 			{
+				displayName: 'Body',
+				name: 'body',
+				type: 'json',
+				default: '',
+				displayOptions: {
+					show: {
+						method: ['PATCH', 'POST', 'PUT'],
+					},
+				},
+				routing: {
+					request: {
+						// @ts-ignore
+						body: '={{ JSON.parse($parameter["body"])}}',
+						json: true,
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					},
+				},
+			},
+			{
 				displayName: 'Parameters',
 				name: 'parameters',
 				type: 'fixedCollection',
