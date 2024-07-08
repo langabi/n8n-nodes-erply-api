@@ -1,7 +1,7 @@
 /* eslint-disable n8n-nodes-base/node-filename-against-convention */
 
 import { apiWebhookRequest } from './methods';
-import { IDataObject, IHookFunctions, INodeType, INodeTypeDescription, IWebhookFunctions, IWebhookResponseData, IWebhookSetupMethods } from 'n8n-workflow';
+import { IDataObject, IHookFunctions, INodeType, INodeTypeDescription, IWebhookFunctions, IWebhookResponseData, } from 'n8n-workflow';
 
 export class ErplyTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -82,7 +82,7 @@ export class ErplyTrigger implements INodeType {
 
 		],
 	};
-	webhookMethods: { [key: string]: IWebhookSetupMethods; } = {
+	webhookMethods = {
 		default: {
 			async checkExists(this: IHookFunctions): Promise<boolean> {
 				const table = this.getNodeParameter('table')
