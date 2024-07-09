@@ -1,5 +1,6 @@
 import {
 	ICredentialDataDecryptedObject,
+	ICredentialTestRequest,
 	ICredentialType,
 	IHttpRequestOptions,
 	INodeProperties,
@@ -8,11 +9,10 @@ import { getSessionKey } from '../nodes/Erply/methods';
 
 
 export class ErplyApi implements ICredentialType {
-	// eslint-disable-next-line n8n-nodes-base/cred-class-field-name-uppercase-first-char
-	name = 'ErplyApi';
+	name = 'erplyApi';
 	displayName = 'Erply API';
 	documentationUrl = 'https://docs.n8n.io/integrations/creating-nodes/build/declarative-style-node/';
-
+	// genericAuth = true;
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Client Code',
@@ -36,6 +36,13 @@ export class ErplyApi implements ICredentialType {
 			},
 		},
 	];
+
+	// authenticate: IAuthenticateGeneric = {
+	// 	type: 'generic',
+	// 	properties: {
+	// 		qs
+	// 	}
+	// }
 
 	async authenticate(
 		credentials: ICredentialDataDecryptedObject,
@@ -66,6 +73,18 @@ export class ErplyApi implements ICredentialType {
 			...requestOptions
 		}
 	}
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: '={{$credentials?.clientCode}}.erply.com',
+			url: '/api',
+			method: 'POST',
+			qs: {
+				request: 'getSessionKeyInfo'
+			}
+		},
+
+	};
 }
 
 

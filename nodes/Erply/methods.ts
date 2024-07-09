@@ -1,9 +1,10 @@
 import {  IDataObject, IHookFunctions, IHttpRequestMethods, ILoadOptionsFunctions, INodePropertyOptions, JsonObject, NodeApiError, NodeOperationError, IHttpRequestOptions, ICredentialDataDecryptedObject } from "n8n-workflow";
+import axios from 'axios';
 
 export async function getServiceEndpoints(
 	this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
-	const creds = await this.getCredentials('ErplyApi')
+	const creds = await this.getCredentials('erplyApi')
 
 	const res = await this.helpers.httpRequest({
 		url: `https://${creds.clientCode}.erply.com/api`,
@@ -52,11 +53,11 @@ export async function getEndpointPaths(
 export async function getSessionKey(credentials: ICredentialDataDecryptedObject): Promise<string> {
 	const url = encodeURI(`https://${credentials.clientCode}.erply.com/api?clientCode=${credentials.clientCode}&username=${credentials.username}&password=${credentials.password}&request=verifyUser&doNotGenerateIdentityToken=1`)
 
-	let authResp: Response;
+	let authResp;
 
 	try {
-		authResp = await fetch(url, {
-			method: 'POST',
+		authResp = await axios.get(url, {
+			method: 'POST'
 		})
 	} catch (error) {
 		throw new Error('Could not authenticate', {
@@ -65,13 +66,11 @@ export async function getSessionKey(credentials: ICredentialDataDecryptedObject)
 	}
 
 
-	if (!authResp.ok) {
+	if (authResp.status !== 200) {
 		throw new Error('Could not authenticate')
 	}
 
-	const authData = await authResp.json() as any;
-
-	return authData.records[0].sessionKey;
+	return authResp.data.records[0].sessionKey;
 }
 
 export async function apiWebhookRequest(
@@ -93,7 +92,7 @@ export async function apiWebhookRequest(
 	}
 
 	try {
-		return await this.helpers.httpRequestWithAuthentication.call(this, 'ErplyApi', opts)
+		return await this.helpers.httpRequestWithAuthentication.call(this, 'erplyApi', opts)
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}

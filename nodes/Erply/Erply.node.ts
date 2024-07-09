@@ -1,17 +1,17 @@
 import {  INodeType, INodeTypeDescription } from 'n8n-workflow';
 
 
-export class ErplyApi implements INodeType {
+export class Erply implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Erply API',
-		name: 'erplyApi',
+		name: 'erply',
 		icon: 'file:logo.svg',
 		defaults: {
 			name: 'Erply API',
 		},
 		credentials: [
 			{
-				name: 'ErplyApi',
+				name: 'erplyApi',
 				required: true,
 			}
 		],

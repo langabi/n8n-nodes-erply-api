@@ -10,7 +10,7 @@ export class ErplyTrigger implements INodeType {
 		icon: 'file:logo.svg',
 		credentials: [
 			{
-				name: 'ErplyApi',
+				name: 'erplyApi',
 				required: true,
 			}
 		],

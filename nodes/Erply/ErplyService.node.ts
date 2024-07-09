@@ -21,7 +21,7 @@ export class ErplyService implements INodeType {
 		},
 		credentials: [
 			{
-				name: 'ErplyApi',
+				name: 'erplyApi',
 				required: true,
 			},
 		],

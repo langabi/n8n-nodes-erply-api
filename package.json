@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-erply-api",
-  "version": "1.0.5",
+  "version": "1.0.14",
   "description": "A complete n8n node package for all Erply APIs and webhooks",
   "keywords": [
     "n8n-community-node-package",
@@ -16,14 +16,19 @@
     "type": "git",
     "url": "https://github.com/ashleygeorgeclarke/n8n-nodes-erply-api"
   },
+  "engines": {
+    "node": ">=18.10",
+    "pnpm": ">=9.1"
+  },
   "main": "index.js",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "build": "tsc && gulp build:icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
     "lintfix": "eslint nodes credentials package.json --fix",
-    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
+    "prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json"
   },
   "files": [
     "dist"
@@ -35,20 +40,20 @@
     ],
     "nodes": [
       "dist/nodes/Erply/ErplyService.node.js",
-      "dist/nodes/Erply/ErplyApi.node.js",
+      "dist/nodes/Erply/Erply.node.js",
       "dist/nodes/Erply/ErplyTrigger.node.js"
     ]
   },
   "devDependencies": {
-    "@types/jsonwebtoken": "^9.0.6",
-    "@typescript-eslint/parser": "~5.45",
-    "eslint-plugin-n8n-nodes-base": "^1.11.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.1",
     "gulp": "^4.0.2",
-    "n8n-workflow": "*",
-    "prettier": "^2.7.1",
-    "typescript": "~4.8.4"
+    "n8n-workflow": "1.48.0",
+    "prettier": "^3.3.2",
+    "typescript": "^5.5.3"
   },
   "peerDependencies": {
-    "n8n-workflow": "*"
+    "axios": "*"
   }
 }
