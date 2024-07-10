@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      Erply:
+        specifier: link:/Users/ash/Documents/GitHub/n8n-nodes-erply-api/nodes/Erply
+        version: link:nodes/Erply
       axios:
         specifier: '*'
         version: 1.7.2

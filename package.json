@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-erply-api",
-  "version": "1.0.14",
+  "version": "1.0.17",
   "description": "A complete n8n node package for all Erply APIs and webhooks",
   "keywords": [
     "n8n-community-node-package",
@@ -22,7 +22,6 @@
   },
   "main": "index.js",
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
     "build": "tsc && gulp build:icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
