@@ -8,13 +8,16 @@ importers:
 
   .:
     dependencies:
-      Erply:
-        specifier: link:/Users/ash/Documents/GitHub/n8n-nodes-erply-api/nodes/Erply
-        version: link:nodes/Erply
       axios:
         specifier: '*'
         version: 1.7.2
+      jmespath:
+        specifier: '*'
+        version: 0.16.0
     devDependencies:
+      '@types/jmespath':
+        specifier: ^0.15.2
+        version: 0.15.2
       '@typescript-eslint/parser':
         specifier: ^7.15.0
         version: 7.15.0(eslint@8.57.0)(typescript@5.5.3)
@@ -91,6 +94,9 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
+
+  '@types/jmespath@0.15.2':
+    resolution: {integrity: sha512-pegh49FtNsC389Flyo9y8AfkVIZn9MMPE9yJrO9svhq6Fks2MwymULWjZqySuxmctd3ZH4/n7Mr98D+1Qo5vGA==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -2073,6 +2079,8 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
+
+  '@types/jmespath@0.15.2': {}
 
   '@types/json-schema@7.0.15': {}
 

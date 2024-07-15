@@ -4,7 +4,7 @@ import {
 	IHttpRequestOptions,
 	INodeProperties,
 } from 'n8n-workflow';
-import { getSessionKey } from '../nodes/Erply/methods';
+import { getSessionAuth } from '../nodes/Erply/GenericFunctions';
 
 
 export class ErplyApi implements ICredentialType {
@@ -34,6 +34,13 @@ export class ErplyApi implements ICredentialType {
 				password: true,
 			},
 		},
+		{
+			displayName: 'Use JWT',
+			description: 'Use JWT instead of session key, may cause issues with some endpoints. Required for CDN api',
+			name: 'useJwt',
+			type: 'boolean',
+			default: false,
+		}
 	];
 
 	async authenticate(
@@ -42,7 +49,7 @@ export class ErplyApi implements ICredentialType {
 	): Promise<IHttpRequestOptions> {
 		// has to be run for each request even though sessionKey has an expiry
 		// because the expirable property only triggers on a 401 response and erply returns 400
-		const sessionKey = await getSessionKey(credentials)
+		const {sessionKey, jwt} = await getSessionAuth(credentials)
 
 		// erply.com/api requires creds in the query string, all others (pim etc) are in the header
 		const isApiUrl = requestOptions.url.includes("erply.com/api")
@@ -54,6 +61,14 @@ export class ErplyApi implements ICredentialType {
 				"sessionKey": sessionKey
 			};
 			return requestOptions;
+		}
+
+		if (credentials.useJwt) {
+			requestOptions.headers = {
+				...requestOptions.headers,
+				"jwt": jwt,
+			};
+			return requestOptions
 		}
 
 		requestOptions.headers = {

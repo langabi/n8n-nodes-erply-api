@@ -1,5 +1,46 @@
-import {  IDataObject, IHookFunctions, IHttpRequestMethods, ILoadOptionsFunctions, INodePropertyOptions, JsonObject, NodeApiError, NodeOperationError, IHttpRequestOptions, ICredentialDataDecryptedObject } from "n8n-workflow";
+import {  IDataObject, IHookFunctions, IHttpRequestMethods, ILoadOptionsFunctions, INodePropertyOptions, JsonObject, NodeApiError, NodeOperationError, IHttpRequestOptions, ICredentialDataDecryptedObject, IExecuteSingleFunctions, IN8nHttpFullResponse, INodeExecutionData } from "n8n-workflow";
 import axios from 'axios';
+
+import jmespath from 'jmespath'
+
+//turns various data responses into either an object or array of objects
+export async function servicePostReceiveTransform(
+	this: IExecuteSingleFunctions,
+	items: INodeExecutionData[],
+	_response: IN8nHttpFullResponse,
+): Promise<INodeExecutionData[]> {
+
+	const jmesPath = this.getNodeParameter('jmesPath') as string
+
+	if (!jmesPath) {
+		return items
+	}
+
+	const body = _response.body as IDataObject
+
+	const retRaw = jmespath.search(body, jmesPath)
+
+	const isObject = typeof retRaw === 'object' && !Array.isArray(retRaw) && retRaw !== null
+	const isArray = Array.isArray(retRaw)
+
+	if (isObject) {
+		return [
+			{
+				json: retRaw
+			}
+		]
+	}
+
+	if (isArray) {
+		return retRaw.map((item: IDataObject) => {
+			return {
+				json: item
+			} as INodeExecutionData
+		})
+	}
+
+	return items
+}
 
 export async function getServiceEndpoints(
 	this: ILoadOptionsFunctions,
@@ -50,7 +91,7 @@ export async function getEndpointPaths(
 	return ret
 }
 
-export async function getSessionKey(credentials: ICredentialDataDecryptedObject): Promise<string> {
+export async function getSessionAuth(credentials: ICredentialDataDecryptedObject): Promise<any> {
 	const url = encodeURI(`https://${credentials.clientCode}.erply.com/api?clientCode=${credentials.clientCode}&username=${credentials.username}&password=${credentials.password}&request=verifyUser&doNotGenerateIdentityToken=1`)
 
 	let authResp;
@@ -70,7 +111,10 @@ export async function getSessionKey(credentials: ICredentialDataDecryptedObject)
 		throw new Error('Could not authenticate')
 	}
 
-	return authResp.data.records[0].sessionKey;
+	return {
+		sessionKey: authResp.data.records[0].sessionKey,
+		jwt: authResp.data.records[0].token
+	};
 }
 
 export async function apiWebhookRequest(
@@ -97,7 +141,6 @@ export async function apiWebhookRequest(
 		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
-
 
 
 

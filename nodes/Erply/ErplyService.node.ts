@@ -2,17 +2,20 @@
 
 /* eslint-disable n8n-nodes-base/node-filename-against-convention */
 
-import { getEndpointPaths, getServiceEndpoints } from './methods';
+import { getEndpointPaths, getServiceEndpoints, servicePostReceiveTransform } from './GenericFunctions';
 import { INodeType, INodeTypeDescription } from 'n8n-workflow';
 
 export class ErplyService implements INodeType {
 	methods = {
+
 		loadOptions: {
 			getServiceEndpoints,
 			getEndpointPaths,
 		},
 	};
+
 	description: INodeTypeDescription = {
+
 		displayName: 'Erply Services',
 		name: 'erplyService',
 		icon: 'file:logo.svg',
@@ -38,7 +41,7 @@ export class ErplyService implements INodeType {
 				displayName: 'Service Base URL',
 				name: 'service',
 				type: 'string',
-				default: '={{$json.records[0].pim.url}}',
+				default: '={{ $json.pim.url }}',
 				required: true,
 				routing: {
 					request: {
@@ -70,7 +73,6 @@ export class ErplyService implements INodeType {
 				type: 'string',
 				hint: 'use .replace() to replace the path with the dynamic value',
 				default: '={{$parameter["endpointPathSelect"]}}',
-				// default: '',
 				displayOptions: {
 					hide: {
 						endpointPathSelect: [undefined, null, ''],
@@ -124,6 +126,20 @@ export class ErplyService implements INodeType {
 						method: '={{$parameter["method"]}}',
 					},
 				},
+			},
+			{
+				displayName: 'JMES Path',
+				name: 'jmesPath',
+				type: 'string',
+				default: '',
+				routing: {
+					output: {
+						// @ts-ignore
+						postReceive: [
+							servicePostReceiveTransform
+						],
+					},
+				}
 			},
 			{
 				displayName: 'Body',

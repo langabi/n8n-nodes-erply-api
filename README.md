@@ -30,6 +30,16 @@ Tested on version 1.47.1
 
 <img width="633" alt="image" src="https://github.com/ashleygeorgeclarke/n8n-nodes-erply-api/assets/4650777/a71a2ad4-921a-40a3-ac11-bba77b7c59c2">
 
+Some API endpoints might return the desired array behind an object root.
+
+```
+{
+	someInfo: "string",
+	actualData: [{}]
+}
+```
+In this case, use the (JMES Path)[https://jmespath.org/] field to return the desired data.
+
 
 ### Erply API
 
@@ -47,6 +57,8 @@ The Endpoint Path Select options are dynamically fetched from the respective ser
 
 If the path contains a replacable components ({ids} etc), use .replace("{ids}", "myvalue") to set the desired values.
 
+
+
 ### Erply Trigger
 
 [These webhooks](https://wiki.erply.com/en/article/760-introduction) will be dynamically created/destroyed, so there's no need to create them manually before use.
@@ -58,6 +70,10 @@ All authenticated requests get a new sessionKey and are not reused even though a
 ErplyService should use [getServiceEndpoints](https://learn-api.erply.com/new-apis) as an input to list the correct endpoint base URLs for your account code. According to Erply, these service endpoints can change without prior notice.
 
 Rate limiting is not currently handled.
+
+Pagination is not currently supported, however using the take parameter for the service endpoints will return 100,000 results.
+
+Currently some of the Erply service endpoint swagger json definition files are not returning valid json and will result in the 'endpoint path select' field unable to load options.
 
 ## Resources
 

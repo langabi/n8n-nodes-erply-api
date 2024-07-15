@@ -1,6 +1,6 @@
 /* eslint-disable n8n-nodes-base/node-filename-against-convention */
 
-import { apiWebhookRequest } from './methods';
+import { apiWebhookRequest } from './GenericFunctions';
 import { IDataObject, IHookFunctions, INodeType, INodeTypeDescription, IWebhookFunctions, IWebhookResponseData, } from 'n8n-workflow';
 
 export class ErplyTrigger implements INodeType {

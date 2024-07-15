@@ -1,7 +1,8 @@
-import {  INodeType, INodeTypeDescription } from 'n8n-workflow';
+import { INodeType, INodeTypeDescription } from 'n8n-workflow';
 
 
 export class Erply implements INodeType {
+
 	description: INodeTypeDescription = {
 		displayName: 'Erply API',
 		name: 'erply',
@@ -15,7 +16,6 @@ export class Erply implements INodeType {
 				required: true,
 			}
 		],
-
 		group: ['input'],
 		version: 1,
 		description: 'Consume Erply API',
@@ -25,6 +25,7 @@ export class Erply implements INodeType {
 		requestDefaults: {
 			method: 'POST',
 		},
+
 
 		properties: [
 			{
@@ -42,6 +43,16 @@ export class Erply implements INodeType {
 				type: 'string',
 				default: 'getServiceEndpoints',
 				routing: {
+					output: {
+						postReceive: [
+							{
+								type: 'rootProperty',
+								properties: {
+									property: 'records'
+								}
+							}
+						]
+					},
 					request: {
 						url: '=https://{{$parameter["clientCode"]}}.erply.com/api',
 						qs: {
@@ -49,8 +60,6 @@ export class Erply implements INodeType {
 							clientCode: '={{$parameter["clientCode"]}}',
 
 						},
-
-						returnFullResponse: true,
 					}
 				},
 			},
