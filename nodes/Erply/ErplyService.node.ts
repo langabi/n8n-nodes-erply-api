@@ -142,6 +142,13 @@ export class ErplyService implements INodeType {
 				}
 			},
 			{
+				displayName: 'Blah',
+				name: 'blah',
+				type: 'hidden',
+				default: {}
+
+			},
+			{
 				displayName: 'Body',
 				name: 'body',
 				type: 'json',

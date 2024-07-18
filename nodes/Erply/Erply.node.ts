@@ -44,16 +44,6 @@ export class Erply implements INodeType {
 				type: 'string',
 				default: 'getServiceEndpoints',
 				routing: {
-					output: {
-						postReceive: [
-							{
-								type: 'rootProperty',
-								properties: {
-									property: 'records'
-								}
-							}
-						]
-					},
 					request: {
 						url: '=https://{{$parameter["clientCode"]}}.erply.com/api',
 						qs: {
