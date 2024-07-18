@@ -1,4 +1,5 @@
 import { INodeType, INodeTypeDescription } from 'n8n-workflow';
+import { servicePostReceiveTransform } from './GenericFunctions';
 
 
 export class Erply implements INodeType {
@@ -62,6 +63,20 @@ export class Erply implements INodeType {
 						},
 					}
 				},
+			},
+			{
+				displayName: 'JMES Path',
+				name: 'jmesPath',
+				type: 'string',
+				default: 'records',
+				routing: {
+					output: {
+						// @ts-ignore
+						postReceive: [
+							servicePostReceiveTransform
+						],
+					},
+				}
 			},
 			{
 				displayName: 'Parameters',

@@ -20,7 +20,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Credentials
 
-Ensure that your Erply user has API access enabled.
+Ensure that your Erply user has API access enabled. Some service endpoints (such as CDN) may require a JWT to be used instead of the default sessionKey. Additionally some service endpoints may incorrectly return an authentication error when using a JWT instead of sessionKey. You will have more success if you use the auth without JWT for all requests unless you're specificially required to use it.
 
 ## Compatibility
 
@@ -40,7 +40,6 @@ Some API endpoints might return the desired array behind an object root.
 ```
 In this case, use the (JMES Path)[https://jmespath.org/] field to return the desired data.
 
-
 ### Erply API
 
 Any calls to the [https://*.erply.com/api](https://learn-api.erply.com/requests) endpoint are handled by the Erply API node.
@@ -56,8 +55,6 @@ The Endpoint Path Select options are dynamically fetched from the respective ser
 ![image](https://github.com/ashleygeorgeclarke/n8n-nodes-erply-api/assets/4650777/5e8a8061-be5d-486f-81db-d896ea20e3e1)
 
 If the path contains a replacable components ({ids} etc), use .replace("{ids}", "myvalue") to set the desired values.
-
-
 
 ### Erply Trigger
 

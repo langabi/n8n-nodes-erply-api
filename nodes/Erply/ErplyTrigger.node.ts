@@ -1,6 +1,6 @@
 /* eslint-disable n8n-nodes-base/node-filename-against-convention */
 
-import { apiWebhookRequest } from './GenericFunctions';
+import { apiWebhookRequest, servicePostReceiveTransform } from './GenericFunctions';
 import { IDataObject, IHookFunctions, INodeType, INodeTypeDescription, IWebhookFunctions, IWebhookResponseData, } from 'n8n-workflow';
 
 export class ErplyTrigger implements INodeType {
@@ -78,8 +78,21 @@ export class ErplyTrigger implements INodeType {
 				type: 'string',
 				default: 'https://webhook.erply.com',
 				required: true,
-			}
-
+			},
+			{
+				displayName: 'JMES Path',
+				name: 'jmesPath',
+				type: 'string',
+				default: 'items[].data',
+				routing: {
+					output: {
+						// @ts-ignore
+						postReceive: [
+							servicePostReceiveTransform
+						],
+					},
+				}
+			},
 		],
 	};
 	webhookMethods = {
