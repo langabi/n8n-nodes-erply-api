@@ -101,6 +101,9 @@ export class ErplyTrigger implements INodeType {
 				const table = this.getNodeParameter('table')
 				const action = this.getNodeParameter('action')
 				const resp = await apiWebhookRequest.call(this, 'GET', '/v1/webhook-configuration', {}) as {action: string, table: string}[]
+				if (!resp) {
+					return false
+				}
 				return resp.some(obj => (obj.action === action && obj.table === table))
 			},
 			async create(this: IHookFunctions): Promise<boolean> {
