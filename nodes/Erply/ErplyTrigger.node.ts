@@ -121,6 +121,9 @@ export class ErplyTrigger implements INodeType {
 				const table = this.getNodeParameter('table')
 				const action = this.getNodeParameter('action')
 				const checkResp = await apiWebhookRequest.call(this, 'GET', '/v1/webhook-configuration', {}) as {action: string, table: string, id: string}[]
+				if (!checkResp) {
+					return false
+				}
 				//get the object where the ID matches
 				const id = checkResp.find(obj => obj.action === action && obj.table === table)?.id
 				if (!id) {

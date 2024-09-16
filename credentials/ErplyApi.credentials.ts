@@ -12,6 +12,7 @@ export class ErplyApi implements ICredentialType {
 	displayName = 'Erply API';
 	documentationUrl = 'https://docs.n8n.io/integrations/creating-nodes/build/declarative-style-node/';
 
+
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Client Code',
