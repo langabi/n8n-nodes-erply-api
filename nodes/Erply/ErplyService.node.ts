@@ -3,7 +3,7 @@
 /* eslint-disable n8n-nodes-base/node-filename-against-convention */
 
 import { getEndpointPaths, getServiceEndpoints, servicePostReceiveTransform } from './GenericFunctions';
-import { INodeType, INodeTypeDescription } from 'n8n-workflow';
+import { IExecuteSingleFunctions, IHttpRequestOptions, INodeType, INodeTypeDescription } from 'n8n-workflow';
 
 export class ErplyService implements INodeType {
 	methods = {
@@ -178,10 +178,28 @@ export class ErplyService implements INodeType {
 					multipleValues: true,
 				},
 				routing: {
-					request: {
-						// @ts-ignore
-						qs: '={{ $parameter.parameters.parameter ? $parameter.parameters.parameter.smartJoin("key", "value") : undefined }}',
+					send: {
+						preSend: [
+							async function (
+								this: IExecuteSingleFunctions,
+								requestOptions: IHttpRequestOptions,
+							): Promise<IHttpRequestOptions> {
+								// const qs = this.helpers.
+								// const { body } = requestOptions as GenericValue as JsonObject;
+								// Object.assign(body!, { updateEnabled: true });
+								const qsVals = this.getNodeParameter('parameters') as { key: string, value: string }[];
+								for (const qsVal of qsVals) {
+									// @ts-ignore
+									requestOptions.qs[qsVal.key as string] = qsVal.value as string
+								}
+								return requestOptions;
+							},
+						],
 					},
+					// request: {
+					// 	// @ts-ignore
+					// 	qs: '={{ $parameter.parameters.parameter ? $parameter.parameters.parameter.smartJoin("key", "value") : undefined }}',
+					// },
 				},
 				options: [
 					{
