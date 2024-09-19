@@ -189,7 +189,14 @@ export class ErplyService implements INodeType {
 								// Object.assign(body!, { updateEnabled: true });
 
 								// @ts-ignore
-								const qsVals = this.getNodeParameter('parameters').parameter as { key: string, value: string }[];
+								// const qsVals = this.getNodeParameter('parameters').parameter as { key: string, value: string }[];
+								const params = this.getNodeParameter('parameters')
+								// @ts-ignore
+								if (!params.parameter) {
+									return requestOptions
+								}
+								// @ts-ignore
+								const qsVals = params.parameter as { key: string, value: string }[];
 								for (const qsVal of qsVals) {
 									// @ts-ignore
 									requestOptions.qs[qsVal.key as string] = qsVal.value as string
