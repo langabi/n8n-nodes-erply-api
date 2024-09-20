@@ -11,14 +11,37 @@ export async function servicePostReceiveTransform(
 ): Promise<INodeExecutionData[]> {
 
 	const jmesPath = this.getNodeParameter('jmesPath') as string
+	const fullResponse = this.getNodeParameter('includeHeaders') as boolean
 
-	if (!jmesPath) {
+	if (!jmesPath && !fullResponse) {
 		return items
+	}
+
+	if (!jmesPath && fullResponse) {
+		return [
+			{
+				json: _response.headers
+			},
+			{
+				json: _response.body
+			}
+		]
 	}
 
 	const body = _response.body as IDataObject
 
 	const retRaw = jmespath.search(body, jmesPath)
+
+	if (fullResponse) {
+		return [
+			{
+				json: _response.headers
+			},
+			{
+				json: retRaw
+			}
+		]
+	}
 
 	const isObject = typeof retRaw === 'object' && !Array.isArray(retRaw) && retRaw !== null
 	const isArray = Array.isArray(retRaw)

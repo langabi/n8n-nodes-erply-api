@@ -96,6 +96,7 @@ export class ErplyService implements INodeType {
 					request: {
 						// @ts-ignore
 						returnFullResponse: '={{$parameter["includeHeaders"]}}',
+
 					}
 				}
 			},
@@ -153,12 +154,6 @@ export class ErplyService implements INodeType {
 						],
 					},
 				}
-			},
-			{
-				displayName: 'Blah',
-				name: 'blah',
-				type: 'hidden',
-				default: {}
 			},
 			{
 				displayName: 'Body',
