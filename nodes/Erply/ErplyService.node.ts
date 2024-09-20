@@ -92,11 +92,6 @@ export class ErplyService implements INodeType {
 				type: 'boolean',
 				default: false,
 				description: 'Whether to include headers in the output',
-				displayOptions: {
-					show: {
-						operation: ['get'],
-					},
-				},
 				routing: {
 					request: {
 						// @ts-ignore
