@@ -87,11 +87,11 @@ export class ErplyService implements INodeType {
 				required: true,
 			},
 			{
-				displayName: 'Include headers',
+				displayName: 'Include Headers',
 				name: 'includeHeaders',
 				type: 'boolean',
 				default: false,
-				description: 'Include headers in the output',
+				description: 'Whether to include headers in the output',
 				displayOptions: {
 					show: {
 						operation: ['get'],
@@ -99,6 +99,7 @@ export class ErplyService implements INodeType {
 				},
 				routing: {
 					request: {
+						// @ts-ignore
 						returnFullResponse: '={{$parameter["includeHeaders"]}}',
 					}
 				}
