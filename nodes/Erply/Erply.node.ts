@@ -55,6 +55,20 @@ export class Erply implements INodeType {
 				},
 			},
 			{
+				displayName: 'Include Headers',
+				name: 'includeHeaders',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to include headers in the output',
+				routing: {
+					request: {
+						// @ts-ignore
+						returnFullResponse: '={{$parameter["includeHeaders"]}}',
+
+					}
+				}
+			},
+			{
 				displayName: 'JMES Path',
 				name: 'jmesPath',
 				type: 'string',
