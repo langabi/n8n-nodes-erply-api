@@ -87,6 +87,23 @@ export class ErplyService implements INodeType {
 				required: true,
 			},
 			{
+				displayName: 'Include headers',
+				name: 'includeHeaders',
+				type: 'boolean',
+				default: false,
+				description: 'Include headers in the output',
+				displayOptions: {
+					show: {
+						operation: ['get'],
+					},
+				},
+				routing: {
+					request: {
+						returnFullResponse: '={{$parameter["includeHeaders"]}}',
+					}
+				}
+			},
+			{
 				displayName: 'Method',
 				name: 'method',
 				type: 'options',
@@ -146,7 +163,6 @@ export class ErplyService implements INodeType {
 				name: 'blah',
 				type: 'hidden',
 				default: {}
-
 			},
 			{
 				displayName: 'Body',
