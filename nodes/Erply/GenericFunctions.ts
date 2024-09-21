@@ -20,10 +20,10 @@ export async function servicePostReceiveTransform(
 	if (!jmesPath && fullResponse) {
 		return [
 			{
-				json: _response.headers
-			},
-			{
-				json: _response.body
+				json: {
+					headers: _response.headers,
+					body: _response.body
+				}
 			}
 		]
 	}
@@ -35,10 +35,10 @@ export async function servicePostReceiveTransform(
 	if (fullResponse) {
 		return [
 			{
-				json: _response.headers
-			},
-			{
-				json: retRaw
+				json: {
+					headers: _response.headers,
+					body: retRaw
+				}
 			}
 		]
 	}
