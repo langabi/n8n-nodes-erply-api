@@ -53,7 +53,12 @@ export class ErplyApi implements ICredentialType {
 		const {sessionKey, jwt} = await getSessionAuth(credentials)
 
 		// erply.com/api requires creds in the query string, all others (pim etc) are in the header
-		const isApiUrl = requestOptions.url.includes("erply.com/api")
+		let isApiUrl = false
+		//hacky workaround so can be used on any http node
+		if (!!requestOptions.url) {
+			isApiUrl = requestOptions.url.includes("erply.com/api")
+		}
+
 
 		if (isApiUrl) {
 			requestOptions.qs = {
