@@ -25,21 +25,21 @@ export class ErplyApi implements ICredentialType {
 			type: 'string',
 			default: '',
 		},
-		// {
-		// 	displayName: 'Username',
-		// 	name: 'username',
-		// 	type: 'string',
-		// 	default: '',
-		// },
-		// {
-		// 	displayName: 'Password',
-		// 	name: 'password',
-		// 	type: 'string',
-		// 	default: '',
-		// 	typeOptions: {
-		// 		password: true,
-		// 	},
-		// },
+		{
+			displayName: 'Username',
+			name: 'username',
+			type: 'string',
+			default: '',
+		},
+		{
+			displayName: 'Password',
+			name: 'password',
+			type: 'string',
+			default: '',
+			typeOptions: {
+				password: true,
+			},
+		},
 		{
 			displayName: 'Use JWT',
 			description:

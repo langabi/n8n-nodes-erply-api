@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-erply-api",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A complete n8n node package for all Erply APIs and webhooks",
   "keywords": [
     "n8n-community-node-package",
