@@ -15,26 +15,32 @@ export class ErplyApi implements ICredentialType {
 
 	properties: INodeProperties[] = [
 		{
+			displayName: 'Auth proxy',
+			name: 'authProxy',
+			type: 'string',
+			default: '',
+		},
+		{
 			displayName: 'Client Code',
 			name: 'clientCode',
 			type: 'string',
 			default: '',
 		},
-		{
-			displayName: 'Username',
-			name: 'username',
-			type: 'string',
-			default: '',
-		},
-		{
-			displayName: 'Password',
-			name: 'password',
-			type: 'string',
-			default: '',
-			typeOptions: {
-				password: true,
-			},
-		},
+		// {
+		// 	displayName: 'Username',
+		// 	name: 'username',
+		// 	type: 'string',
+		// 	default: '',
+		// },
+		// {
+		// 	displayName: 'Password',
+		// 	name: 'password',
+		// 	type: 'string',
+		// 	default: '',
+		// 	typeOptions: {
+		// 		password: true,
+		// 	},
+		// },
 		{
 			displayName: 'Use JWT',
 			description: 'Use JWT instead of session key, may cause issues with some endpoints. Required for CDN api',

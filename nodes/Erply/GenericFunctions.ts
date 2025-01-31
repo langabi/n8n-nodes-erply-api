@@ -115,19 +115,35 @@ export async function getEndpointPaths(
 }
 
 export async function getSessionAuth(credentials: ICredentialDataDecryptedObject): Promise<any> {
-	const url = encodeURI(`https://${credentials.clientCode}.erply.com/api?clientCode=${credentials.clientCode}&username=${credentials.username}&password=${credentials.password}&request=verifyUser&doNotGenerateIdentityToken=1`)
+	// const url = encodeURI(`https://${credentials.clientCode}.erply.com/api?clientCode=${credentials.clientCode}&username=${credentials.username}&password=${credentials.password}&request=verifyUser&doNotGenerateIdentityToken=1`)
 
 	let authResp;
 
+	// try {
+	// 	authResp = await axios.get(url, {
+	// 		method: 'POST'
+	// 	})
+	// } catch (error) {
+	// 	throw new Error('Could not authenticate', {
+	// 		cause: error
+	// 	})
+	// }
+
+
+
 	try {
-		authResp = await axios.get(url, {
-			method: 'POST'
+
+		authResp = await axios.get(credentials.authProxy as string, {
+			auth: {
+				username: credentials.username as string,
+				password: credentials.password as string
+			}
 		})
 	} catch (error) {
-		throw new Error('Could not authenticate', {
-			cause: error
-		})
-	}
+			throw new Error('Could not authenticate', {
+				cause: error
+			})
+		}
 
 
 	if (authResp.status !== 200) {
