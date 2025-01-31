@@ -6,12 +6,11 @@ import {
 } from 'n8n-workflow';
 import { getSessionAuth } from '../nodes/Erply/GenericFunctions';
 
-
 export class ErplyApi implements ICredentialType {
 	name = 'erplyApi';
 	displayName = 'Erply API';
-	documentationUrl = 'https://docs.n8n.io/integrations/creating-nodes/build/declarative-style-node/';
-
+	documentationUrl =
+		'https://docs.n8n.io/integrations/creating-nodes/build/declarative-style-node/';
 
 	properties: INodeProperties[] = [
 		{
@@ -43,11 +42,12 @@ export class ErplyApi implements ICredentialType {
 		// },
 		{
 			displayName: 'Use JWT',
-			description: 'Use JWT instead of session key, may cause issues with some endpoints. Required for CDN api',
+			description:
+				'Use JWT instead of session key, may cause issues with some endpoints. Required for CDN api',
 			name: 'useJwt',
 			type: 'boolean',
 			default: false,
-		}
+		},
 	];
 
 	async authenticate(
@@ -56,21 +56,20 @@ export class ErplyApi implements ICredentialType {
 	): Promise<IHttpRequestOptions> {
 		// has to be run for each request even though sessionKey has an expiry
 		// because the expirable property only triggers on a 401 response and erply returns 400
-		const {sessionKey, jwt} = await getSessionAuth(credentials)
+		const { sessionKey, jwt } = await getSessionAuth(credentials);
 
 		// erply.com/api requires creds in the query string, all others (pim etc) are in the header
-		let isApiUrl = false
+		let isApiUrl = false;
 		//hacky workaround so can be used on any http node
 		if (!!requestOptions.url) {
-			isApiUrl = requestOptions.url.includes("erply.com/api")
+			isApiUrl = requestOptions.url.includes('erply.com/api');
 		}
-
 
 		if (isApiUrl) {
 			requestOptions.qs = {
 				...requestOptions.qs,
-				"clientCode": credentials.clientCode,
-				"sessionKey": sessionKey
+				clientCode: credentials.clientCode,
+				sessionKey: sessionKey,
 			};
 			return requestOptions;
 		}
@@ -78,21 +77,18 @@ export class ErplyApi implements ICredentialType {
 		if (credentials.useJwt) {
 			requestOptions.headers = {
 				...requestOptions.headers,
-				"jwt": jwt,
+				jwt: jwt,
 			};
-			return requestOptions
+			return requestOptions;
 		}
 
 		requestOptions.headers = {
 			...requestOptions.headers,
-			"clientCode": credentials.clientCode,
-			"sessionKey": sessionKey,
+			clientCode: credentials.clientCode,
+			sessionKey: sessionKey,
 		};
 		return {
-			...requestOptions
-		}
+			...requestOptions,
+		};
 	}
 }
-
-
-

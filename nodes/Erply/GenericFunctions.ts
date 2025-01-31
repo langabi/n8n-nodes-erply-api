@@ -1,7 +1,21 @@
-import {  IDataObject, IHookFunctions, IHttpRequestMethods, ILoadOptionsFunctions, INodePropertyOptions, JsonObject, NodeApiError, NodeOperationError, IHttpRequestOptions, ICredentialDataDecryptedObject, IExecuteSingleFunctions, IN8nHttpFullResponse, INodeExecutionData } from "n8n-workflow";
+import {
+	IDataObject,
+	IHookFunctions,
+	IHttpRequestMethods,
+	ILoadOptionsFunctions,
+	INodePropertyOptions,
+	JsonObject,
+	NodeApiError,
+	NodeOperationError,
+	IHttpRequestOptions,
+	ICredentialDataDecryptedObject,
+	IExecuteSingleFunctions,
+	IN8nHttpFullResponse,
+	INodeExecutionData,
+} from 'n8n-workflow';
 import axios from 'axios';
 
-import jmespath from 'jmespath'
+import jmespath from 'jmespath';
 
 //turns various data responses into either an object or array of objects
 export async function servicePostReceiveTransform(
@@ -9,12 +23,11 @@ export async function servicePostReceiveTransform(
 	items: INodeExecutionData[],
 	_response: IN8nHttpFullResponse,
 ): Promise<INodeExecutionData[]> {
-
-	const jmesPath = this.getNodeParameter('jmesPath') as string
-	const fullResponse = this.getNodeParameter('includeHeaders') as boolean
+	const jmesPath = this.getNodeParameter('jmesPath') as string;
+	const fullResponse = this.getNodeParameter('includeHeaders') as boolean;
 
 	if (!jmesPath && !fullResponse) {
-		return items
+		return items;
 	}
 
 	if (!jmesPath && fullResponse) {
@@ -22,96 +35,95 @@ export async function servicePostReceiveTransform(
 			{
 				json: {
 					headers: _response.headers,
-					body: _response.body
-				}
-			}
-		]
+					body: _response.body,
+				},
+			},
+		];
 	}
 
-	const body = _response.body as IDataObject
+	const body = _response.body as IDataObject;
 
-	const retRaw = jmespath.search(body, jmesPath)
+	const retRaw = jmespath.search(body, jmesPath);
 
 	if (fullResponse) {
 		return [
 			{
 				json: {
 					headers: _response.headers,
-					body: retRaw
-				}
-			}
-		]
+					body: retRaw,
+				},
+			},
+		];
 	}
 
-	const isObject = typeof retRaw === 'object' && !Array.isArray(retRaw) && retRaw !== null
-	const isArray = Array.isArray(retRaw)
+	const isObject = typeof retRaw === 'object' && !Array.isArray(retRaw) && retRaw !== null;
+	const isArray = Array.isArray(retRaw);
 
 	if (isObject) {
 		return [
 			{
-				json: retRaw
-			}
-		]
+				json: retRaw,
+			},
+		];
 	}
 
 	if (isArray) {
 		return retRaw.map((item: IDataObject) => {
 			return {
-				json: item
-			} as INodeExecutionData
-		})
+				json: item,
+			} as INodeExecutionData;
+		});
 	}
 
-	return items
+	return items;
 }
 
 export async function getServiceEndpoints(
 	this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
-	const creds = await this.getCredentials('erplyApi')
+	const creds = await this.getCredentials('erplyApi');
 
 	const res = await this.helpers.httpRequest({
 		url: `https://${creds.clientCode}.erply.com/api`,
 		method: 'POST',
 		qs: {
 			request: 'getServiceEndpoints',
-			"clientCode": creds.clientCode,
-		}
-	})
+			clientCode: creds.clientCode,
+		},
+	});
 
 	if (res.status.errorCode != 0) {
-		throw new NodeOperationError(this.getNode(), 'Error')
+		throw new NodeOperationError(this.getNode(), 'Error');
 	}
 
-	const ret = Object.keys(res.records[0]).map(key => {
+	const ret = Object.keys(res.records[0]).map((key) => {
 		return {
 			name: key,
-			value: res.records[0][key].url
-		}
-	})
-	return ret
+			value: res.records[0][key].url,
+		};
+	});
+	return ret;
 }
 
 export async function getEndpointPaths(
 	this: ILoadOptionsFunctions,
 ): Promise<INodePropertyOptions[]> {
-
 	const endpointPath = this.getNodeParameter('service', null, {
-		extractValue: true
-	}) as any
+		extractValue: true,
+	}) as any;
 
 	const res = await this.helpers.httpRequest({
-		url: endpointPath + "documentation/doc.json",
+		url: endpointPath + 'documentation/doc.json',
 		method: 'GET',
-	})
+	});
 
-	const ret = Object.keys(res.paths).map(key => {
+	const ret = Object.keys(res.paths).map((key) => {
 		return {
 			name: key,
-			value: key
-		}
-	})
-	return ret
+			value: key,
+		};
+	});
+	return ret;
 }
 
 export async function getSessionAuth(credentials: ICredentialDataDecryptedObject): Promise<any> {
@@ -129,30 +141,26 @@ export async function getSessionAuth(credentials: ICredentialDataDecryptedObject
 	// 	})
 	// }
 
-
-
 	try {
-
 		authResp = await axios.get(credentials.authProxy as string, {
 			auth: {
 				username: credentials.username as string,
-				password: credentials.password as string
-			}
-		})
+				password: credentials.password as string,
+			},
+		});
 	} catch (error) {
-			throw new Error('Could not authenticate', {
-				cause: error
-			})
-		}
-
+		throw new Error('Could not authenticate', {
+			cause: error,
+		});
+	}
 
 	if (authResp.status !== 200) {
-		throw new Error('Could not authenticate')
+		throw new Error('Could not authenticate');
 	}
 
 	return {
 		sessionKey: authResp.data.records[0].sessionKey,
-		jwt: authResp.data.records[0].token
+		jwt: authResp.data.records[0].token,
 	};
 }
 
@@ -162,24 +170,21 @@ export async function apiWebhookRequest(
 	endpoint: string,
 	body: IDataObject,
 ): Promise<any> {
-	const baseUrl = this.getNodeParameter('baseUrl')
+	const baseUrl = this.getNodeParameter('baseUrl');
 
 	const opts: IHttpRequestOptions = {
 		url: `${baseUrl}${endpoint}`,
 		method,
-		body
-	}
+		body,
+	};
 
 	if (Object.keys(body).length === 0) {
 		delete opts.body;
 	}
 
 	try {
-		return await this.helpers.httpRequestWithAuthentication.call(this, 'erplyApi', opts)
+		return await this.helpers.httpRequestWithAuthentication.call(this, 'erplyApi', opts);
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
-
-
-

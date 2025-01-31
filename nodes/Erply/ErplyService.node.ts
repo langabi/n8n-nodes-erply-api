@@ -2,12 +2,20 @@
 
 /* eslint-disable n8n-nodes-base/node-filename-against-convention */
 
-import { getEndpointPaths, getServiceEndpoints, servicePostReceiveTransform } from './GenericFunctions';
-import { IExecuteSingleFunctions, IHttpRequestOptions, INodeType, INodeTypeDescription } from 'n8n-workflow';
+import {
+	getEndpointPaths,
+	getServiceEndpoints,
+	servicePostReceiveTransform,
+} from './GenericFunctions';
+import {
+	IExecuteSingleFunctions,
+	IHttpRequestOptions,
+	INodeType,
+	INodeTypeDescription,
+} from 'n8n-workflow';
 
 export class ErplyService implements INodeType {
 	methods = {
-
 		loadOptions: {
 			getServiceEndpoints,
 			getEndpointPaths,
@@ -15,7 +23,6 @@ export class ErplyService implements INodeType {
 	};
 
 	description: INodeTypeDescription = {
-
 		displayName: 'Erply Services',
 		name: 'erplyService',
 		icon: 'file:logo.svg',
@@ -96,9 +103,8 @@ export class ErplyService implements INodeType {
 					request: {
 						// @ts-ignore
 						returnFullResponse: '={{$parameter["includeHeaders"]}}',
-
-					}
-				}
+					},
+				},
 			},
 			{
 				displayName: 'Method',
@@ -149,11 +155,9 @@ export class ErplyService implements INodeType {
 				routing: {
 					output: {
 						// @ts-ignore
-						postReceive: [
-							servicePostReceiveTransform
-						],
+						postReceive: [servicePostReceiveTransform],
 					},
-				}
+				},
 			},
 			{
 				displayName: 'Body',
@@ -197,16 +201,16 @@ export class ErplyService implements INodeType {
 
 								// @ts-ignore
 								// const qsVals = this.getNodeParameter('parameters').parameter as { key: string, value: string }[];
-								const params = this.getNodeParameter('parameters')
+								const params = this.getNodeParameter('parameters');
 								// @ts-ignore
 								if (!params.parameter) {
-									return requestOptions
+									return requestOptions;
 								}
 								// @ts-ignore
-								const qsVals = params.parameter as { key: string, value: string }[];
+								const qsVals = params.parameter as { key: string; value: string }[];
 								for (const qsVal of qsVals) {
 									// @ts-ignore
-									requestOptions.qs[qsVal.key as string] = qsVal.value as string
+									requestOptions.qs[qsVal.key as string] = qsVal.value as string;
 								}
 								return requestOptions;
 							},

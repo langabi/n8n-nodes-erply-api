@@ -1,7 +1,14 @@
 /* eslint-disable n8n-nodes-base/node-filename-against-convention */
 
 import { apiWebhookRequest, servicePostReceiveTransform } from './GenericFunctions';
-import { IDataObject, IHookFunctions, INodeType, INodeTypeDescription, IWebhookFunctions, IWebhookResponseData, } from 'n8n-workflow';
+import {
+	IDataObject,
+	IHookFunctions,
+	INodeType,
+	INodeTypeDescription,
+	IWebhookFunctions,
+	IWebhookResponseData,
+} from 'n8n-workflow';
 
 export class ErplyTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -12,7 +19,7 @@ export class ErplyTrigger implements INodeType {
 			{
 				name: 'erplyApi',
 				required: true,
-			}
+			},
 		],
 		defaults: {
 			name: 'Erply Trigger',
@@ -30,8 +37,8 @@ export class ErplyTrigger implements INodeType {
 				name: 'default',
 				httpMethod: 'POST',
 				responseMode: 'onReceived',
-				path: 'webhook'
-			}
+				path: 'webhook',
+			},
 		],
 		properties: [
 			{
@@ -48,16 +55,16 @@ export class ErplyTrigger implements INodeType {
 				options: [
 					{
 						name: 'Insert',
-						value: 'insert'
+						value: 'insert',
 					},
 					{
 						name: 'Update',
-						value: 'update'
+						value: 'update',
 					},
 					{
 						name: 'Delete',
-						value: 'delete'
-					}
+						value: 'delete',
+					},
 				],
 				default: 'insert',
 				required: true,
@@ -69,8 +76,8 @@ export class ErplyTrigger implements INodeType {
 				default: '',
 				required: true,
 				typeOptions: {
-					password: true
-				}
+					password: true,
+				},
 			},
 			{
 				displayName: 'Include Headers',
@@ -82,9 +89,8 @@ export class ErplyTrigger implements INodeType {
 					request: {
 						// @ts-ignore
 						returnFullResponse: '={{$parameter["includeHeaders"]}}',
-
-					}
-				}
+					},
+				},
 			},
 			{
 				displayName: 'Base URL',
@@ -101,72 +107,82 @@ export class ErplyTrigger implements INodeType {
 				routing: {
 					output: {
 						// @ts-ignore
-						postReceive: [
-							servicePostReceiveTransform
-						],
+						postReceive: [servicePostReceiveTransform],
 					},
-				}
+				},
 			},
 		],
 	};
 	webhookMethods = {
 		default: {
 			async checkExists(this: IHookFunctions): Promise<boolean> {
-				const table = this.getNodeParameter('table')
-				const action = this.getNodeParameter('action')
-				const resp = await apiWebhookRequest.call(this, 'GET', '/v1/webhook-configuration', {}) as {action: string, table: string}[]
+				const table = this.getNodeParameter('table');
+				const action = this.getNodeParameter('action');
+				const resp = (await apiWebhookRequest.call(
+					this,
+					'GET',
+					'/v1/webhook-configuration',
+					{},
+				)) as { action: string; table: string }[];
 				if (!resp) {
-					return false
+					return false;
 				}
-				return resp.some(obj => (obj.action === action && obj.table === table))
+				return resp.some((obj) => obj.action === action && obj.table === table);
 			},
 			async create(this: IHookFunctions): Promise<boolean> {
-				const payload = this.getNode().parameters as {table: string, action: string, secret: string}
+				const payload = this.getNode().parameters as {
+					table: string;
+					action: string;
+					secret: string;
+				};
 				const endpoint = this.getNodeWebhookUrl('default');
 				try {
 					await apiWebhookRequest.call(this, 'POST', '/v1/webhook-configuration', {
 						...payload,
 						endpoint,
-						disabled: false
-					})
+						disabled: false,
+					});
 				} catch (error) {
-					return false
+					return false;
 				}
-				return true
+				return true;
 			},
 			async delete(this: IHookFunctions): Promise<boolean> {
-				const table = this.getNodeParameter('table')
-				const action = this.getNodeParameter('action')
-				const checkResp = await apiWebhookRequest.call(this, 'GET', '/v1/webhook-configuration', {}) as {action: string, table: string, id: string}[]
+				const table = this.getNodeParameter('table');
+				const action = this.getNodeParameter('action');
+				const checkResp = (await apiWebhookRequest.call(
+					this,
+					'GET',
+					'/v1/webhook-configuration',
+					{},
+				)) as { action: string; table: string; id: string }[];
 				if (!checkResp) {
-					return false
+					return false;
 				}
 				//get the object where the ID matches
-				const id = checkResp.find(obj => obj.action === action && obj.table === table)?.id
+				const id = checkResp.find((obj) => obj.action === action && obj.table === table)?.id;
 				if (!id) {
-					return false
+					return false;
 				}
 				//delete the webhook
 				try {
-					await apiWebhookRequest.call(this, 'DELETE', `/v1/webhook-configuration/${id}`, {})
+					await apiWebhookRequest.call(this, 'DELETE', `/v1/webhook-configuration/${id}`, {});
 				} catch (error) {
-					return false
+					return false;
 				}
-				return true
-			}
-		}
-	}
+				return true;
+			},
+		},
+	};
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		const items = this.getBodyData().items as IDataObject[]
+		const items = this.getBodyData().items as IDataObject[];
 
 		return {
-			workflowData: [ this.helpers.returnJsonArray(items) ],
+			workflowData: [this.helpers.returnJsonArray(items)],
 			webhookResponse: {
-				status: 200
-			}
-		}
+				status: 200,
+			},
+		};
 	}
 }
-
-

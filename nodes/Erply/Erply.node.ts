@@ -1,9 +1,7 @@
 import { INodeType, INodeTypeDescription } from 'n8n-workflow';
 import { servicePostReceiveTransform } from './GenericFunctions';
 
-
 export class Erply implements INodeType {
-
 	description: INodeTypeDescription = {
 		displayName: 'Erply API',
 		name: 'erply',
@@ -15,7 +13,7 @@ export class Erply implements INodeType {
 			{
 				name: 'erplyApi',
 				required: true,
-			}
+			},
 		],
 		group: ['input'],
 		version: 1,
@@ -26,7 +24,6 @@ export class Erply implements INodeType {
 		requestDefaults: {
 			method: 'POST',
 		},
-
 
 		properties: [
 			{
@@ -49,9 +46,8 @@ export class Erply implements INodeType {
 						qs: {
 							request: '={{$parameter["request"]}}',
 							clientCode: '={{$parameter["clientCode"]}}',
-
 						},
-					}
+					},
 				},
 			},
 			{
@@ -64,9 +60,8 @@ export class Erply implements INodeType {
 					request: {
 						// @ts-ignore
 						returnFullResponse: '={{$parameter["includeHeaders"]}}',
-
-					}
-				}
+					},
+				},
 			},
 			{
 				displayName: 'JMES Path',
@@ -76,11 +71,9 @@ export class Erply implements INodeType {
 				routing: {
 					output: {
 						// @ts-ignore
-						postReceive: [
-							servicePostReceiveTransform
-						],
+						postReceive: [servicePostReceiveTransform],
 					},
-				}
+				},
 			},
 			{
 				displayName: 'Parameters',
@@ -94,7 +87,7 @@ export class Erply implements INodeType {
 					request: {
 						//@ts-ignore
 						qs: '={{ $parameter.parameters.parameter ? $parameter.parameters.parameter.smartJoin("key", "value") : undefined }}',
-					}
+					},
 				},
 				options: [
 					{
@@ -114,11 +107,10 @@ export class Erply implements INodeType {
 								type: 'string',
 								default: '',
 							},
-						]
+						],
 					},
-				]
-			}
-		]
-	}
+				],
+			},
+		],
+	};
 }
-
