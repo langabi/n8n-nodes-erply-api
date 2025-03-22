@@ -127,7 +127,12 @@ export async function getEndpointPaths(
 }
 
 export async function getSessionAuth(credentials: ICredentialDataDecryptedObject): Promise<any> {
-	// const url = encodeURI(`https://${credentials.clientCode}.erply.com/api?clientCode=${credentials.clientCode}&username=${credentials.username}&password=${credentials.password}&request=verifyUser&doNotGenerateIdentityToken=1`)
+	let url;
+	if (credentials.authProxy) {
+		url = credentials.authProxy as string;
+	} else {
+		url = encodeURI(`https://${credentials.clientCode}.erply.com/api?clientCode=${credentials.clientCode}&username=${credentials.username}&password=${credentials.password}&request=verifyUser&doNotGenerateIdentityToken=1`)
+	}
 
 	let authResp;
 
@@ -142,7 +147,7 @@ export async function getSessionAuth(credentials: ICredentialDataDecryptedObject
 	// }
 
 	try {
-		authResp = await axios.get(credentials.authProxy as string, {
+		authResp = await axios.get(url, {
 			auth: {
 				username: credentials.username as string,
 				password: credentials.password as string,
