@@ -29,7 +29,7 @@ let sessionCache: Record<string, SessionCache> = {};
 export async function servicePostReceiveTransform(
 	this: IExecuteSingleFunctions,
 	items: INodeExecutionData[],
-	_response: IN8nHttpFullResponse,
+	response: IN8nHttpFullResponse,
 ): Promise<INodeExecutionData[]> {
 	const jmesPath = this.getNodeParameter('jmesPath') as string;
 	const fullResponse = this.getNodeParameter('includeHeaders') as boolean;
@@ -42,14 +42,14 @@ export async function servicePostReceiveTransform(
 		return [
 			{
 				json: {
-					headers: _response.headers,
-					body: _response.body,
+					headers: response.headers,
+					body: response.body,
 				},
 			},
 		];
 	}
 
-	const body = _response.body as IDataObject;
+	const body = response.body as IDataObject;
 
 	const retRaw = jmespath.search(body, jmesPath);
 
@@ -57,7 +57,7 @@ export async function servicePostReceiveTransform(
 		return [
 			{
 				json: {
-					headers: _response.headers,
+					headers: response.headers,
 					body: retRaw,
 				},
 			},
@@ -208,4 +208,78 @@ export async function apiWebhookRequest(
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
+}
+
+export async function processBulkRequest(
+	this: IExecuteSingleFunctions,
+	items: INodeExecutionData[],
+	batchSize: number,
+	requestOptions: IHttpRequestOptions,
+): Promise<INodeExecutionData[]> {
+	const results: INodeExecutionData[] = [];
+	const jmesPath = this.getNodeParameter('jmesPath') as string;
+	const fullResponse = this.getNodeParameter('includeHeaders') as boolean;
+
+	// Process items in batches
+	for (let i = 0; i < items.length; i += batchSize) {
+		const batch = items.slice(i, i + batchSize).map(item => item.json);
+
+		const batchRequestOptions = {
+			...requestOptions,
+			body: batch,
+		};
+
+		// Make the bulk request
+		const response = await this.helpers.httpRequest(batchRequestOptions);
+
+		// Handle the response based on jmesPath and fullResponse settings
+		if (!jmesPath && !fullResponse) {
+			// If no transformation needed, return as is
+			if (Array.isArray(response)) {
+				results.push(...response.map(item => ({ json: item })));
+			} else {
+				results.push({ json: response });
+			}
+			continue;
+		}
+
+		if (!jmesPath && fullResponse) {
+			// If only headers needed
+			results.push({
+				json: {
+					headers: requestOptions.headers || {},
+					body: response,
+				},
+			});
+			continue;
+		}
+
+		// Handle jmesPath transformation
+		const body = response as IDataObject;
+		const retRaw = jmespath.search(body, jmesPath);
+
+		if (fullResponse) {
+			results.push({
+				json: {
+					headers: requestOptions.headers || {},
+					body: retRaw,
+				},
+			});
+			continue;
+		}
+
+		// Handle transformed response
+		const isObject = typeof retRaw === 'object' && !Array.isArray(retRaw) && retRaw !== null;
+		const isArray = Array.isArray(retRaw);
+
+		if (isObject) {
+			results.push({ json: retRaw });
+		} else if (isArray) {
+			results.push(...retRaw.map((item: IDataObject) => ({ json: item })));
+		} else {
+			results.push({ json: retRaw });
+		}
+	}
+
+	return results;
 }

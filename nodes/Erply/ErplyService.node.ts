@@ -6,6 +6,7 @@ import {
 	getEndpointPaths,
 	getServiceEndpoints,
 	servicePostReceiveTransform,
+	processBulkRequest,
 } from './GenericFunctions';
 import {
 	IExecuteSingleFunctions,
@@ -78,7 +79,8 @@ export class ErplyService implements INodeType {
 				displayName: 'Endpoint Path',
 				name: 'endpointPath',
 				type: 'string',
-				hint: 'use .replace() to replace the path with the dynamic value',
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-miscased-id
+				description: 'Use .replace() to replace parameters in the path (like `{id}`) with the dynamic value',
 				default: '={{$parameter["endpointPathSelect"]}}',
 				displayOptions: {
 					hide: {
@@ -170,13 +172,87 @@ export class ErplyService implements INodeType {
 					},
 				},
 				routing: {
+					send: {
+						preSend: [
+							async function (
+								this: IExecuteSingleFunctions,
+								requestOptions: IHttpRequestOptions,
+							): Promise<IHttpRequestOptions> {
+								const endpointPath = this.getNodeParameter('endpointPath') as string;
+								const bulkMode = this.getNodeParameter('bulkMode', false) as boolean;
+								const body = this.getNodeParameter('body') as string;
+
+								// If it's not a bulk endpoint or bulk mode is disabled, process normally
+								if (!endpointPath.includes('bulk') || !bulkMode) {
+									requestOptions.body = JSON.parse(body);
+									return requestOptions;
+								}
+
+								// For bulk processing, we'll handle the items in batches
+								const batchSize = this.getNodeParameter('batchSize') as number;
+								const inputData = this.getInputData();
+
+								// Ensure we have valid input data
+								if (!inputData || !Array.isArray(inputData) || inputData.length === 0) {
+									return requestOptions;
+								}
+
+								// If we have items to process in bulk
+								const results = await processBulkRequest.call(
+									this,
+									inputData,
+									batchSize,
+									requestOptions,
+								);
+
+								// Store the results to be retrieved later
+								// @ts-ignore
+								this.helpers.returnJsonArray(results);
+
+								return requestOptions;
+							},
+						],
+					},
 					request: {
-						// @ts-ignore
-						body: '={{ JSON.parse($parameter["body"])}}',
 						json: true,
 						headers: {
 							'Content-Type': 'application/json',
 						},
+					},
+				},
+			},
+			{
+				displayName: 'Use Bulk Processing',
+				name: 'bulkMode',
+				type: 'boolean',
+				default: true,
+				description: 'Whether to process items in bulk (this endpoint supports bulk operations)',
+				displayOptions: {
+					show: {
+						method: ['POST', 'PUT', 'PATCH'],
+						endpointPath: [{
+							_cnd: {
+								includes: 'bulk'
+							}
+						}],
+					},
+				},
+			},
+			{
+				displayName: 'Batch Size',
+				name: 'batchSize',
+				type: 'number',
+				default: 100,
+				description: 'Maximum number of items to process in each batch (max 100)',
+				displayOptions: {
+					show: {
+						method: ['POST', 'PUT', 'PATCH'],
+						bulkMode: [true],
+						endpointPath: [{
+							_cnd: {
+								includes: 'bulk'
+							}
+						}],
 					},
 				},
 			},
