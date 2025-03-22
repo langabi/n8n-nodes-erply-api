@@ -17,6 +17,14 @@ import axios from 'axios';
 
 import jmespath from 'jmespath';
 
+interface SessionCache {
+	sessionKey: string;
+	jwt: string;
+	expiresAt: number;
+}
+
+let sessionCache: Record<string, SessionCache> = {};
+
 //turns various data responses into either an object or array of objects
 export async function servicePostReceiveTransform(
 	this: IExecuteSingleFunctions,
@@ -127,6 +135,18 @@ export async function getEndpointPaths(
 }
 
 export async function getSessionAuth(credentials: ICredentialDataDecryptedObject): Promise<any> {
+	const cacheKey = `${credentials.clientCode}:${credentials.username}`;
+	const now = Date.now();
+
+	// Check if we have a valid cached session
+	if (sessionCache[cacheKey] && sessionCache[cacheKey].expiresAt > now) {
+		return {
+			sessionKey: sessionCache[cacheKey].sessionKey,
+			jwt: sessionCache[cacheKey].jwt,
+		};
+	}
+
+	// If not cached or expired, authenticate
 	let url;
 	if (credentials.authProxy) {
 		url = credentials.authProxy as string;
@@ -135,17 +155,6 @@ export async function getSessionAuth(credentials: ICredentialDataDecryptedObject
 	}
 
 	let authResp;
-
-	// try {
-	// 	authResp = await axios.get(url, {
-	// 		method: 'POST'
-	// 	})
-	// } catch (error) {
-	// 	throw new Error('Could not authenticate', {
-	// 		cause: error
-	// 	})
-	// }
-
 	try {
 		authResp = await axios.get(url, {
 			auth: {
@@ -163,9 +172,16 @@ export async function getSessionAuth(credentials: ICredentialDataDecryptedObject
 		throw new Error('Could not authenticate');
 	}
 
-	return {
+	// Cache the session for 45 minutes (Erply sessions typically last 1 hour)
+	sessionCache[cacheKey] = {
 		sessionKey: authResp.data.records[0].sessionKey,
 		jwt: authResp.data.records[0].token,
+		expiresAt: now + 45 * 60 * 1000,
+	};
+
+	return {
+		sessionKey: sessionCache[cacheKey].sessionKey,
+		jwt: sessionCache[cacheKey].jwt,
 	};
 }
 
