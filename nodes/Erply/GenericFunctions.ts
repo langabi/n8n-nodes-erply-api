@@ -217,8 +217,6 @@ export async function processBulkRequest(
 	requestOptions: IHttpRequestOptions,
 ): Promise<INodeExecutionData[]> {
 	const results: INodeExecutionData[] = [];
-	const jmesPath = this.getNodeParameter('jmesPath') as string;
-	const fullResponse = this.getNodeParameter('includeHeaders') as boolean;
 
 	// Process items in batches
 	for (let i = 0; i < items.length; i += batchSize) {
@@ -226,58 +224,44 @@ export async function processBulkRequest(
 
 		const batchRequestOptions = {
 			...requestOptions,
-			body: batch,
+			body: {
+				requests: batch
+			},
 		};
 
-		// Make the bulk request
-		const response = await this.helpers.httpRequest(batchRequestOptions);
+		// Make the bulk request with authentication
+		const response = await this.helpers.httpRequestWithAuthentication.call(
+			this,
+			'erplyApi',
+			batchRequestOptions,
+		);
 
-		// Handle the response based on jmesPath and fullResponse settings
-		if (!jmesPath && !fullResponse) {
-			// If no transformation needed, return as is
-			if (Array.isArray(response)) {
-				results.push(...response.map(item => ({ json: item })));
-			} else {
-				results.push({ json: response });
+		// Handle each response in the bulk response array
+		if (response.results && Array.isArray(response.results)) {
+			for (const singleResponse of response.results) {
+				const transformedResponse = await servicePostReceiveTransform.call(
+					this,
+					[{ json: singleResponse }],
+					{
+						headers: requestOptions.headers || {},
+						body: singleResponse,
+						statusCode: 200 // Assuming successful response
+					},
+				);
+				results.push(...transformedResponse);
 			}
-			continue;
-		}
-
-		if (!jmesPath && fullResponse) {
-			// If only headers needed
-			results.push({
-				json: {
+		} else {
+			// Fallback for non-array response (shouldn't happen with bulk API)
+			const transformedResponse = await servicePostReceiveTransform.call(
+				this,
+				[{ json: response }],
+				{
 					headers: requestOptions.headers || {},
 					body: response,
+					statusCode: 200
 				},
-			});
-			continue;
-		}
-
-		// Handle jmesPath transformation
-		const body = response as IDataObject;
-		const retRaw = jmespath.search(body, jmesPath);
-
-		if (fullResponse) {
-			results.push({
-				json: {
-					headers: requestOptions.headers || {},
-					body: retRaw,
-				},
-			});
-			continue;
-		}
-
-		// Handle transformed response
-		const isObject = typeof retRaw === 'object' && !Array.isArray(retRaw) && retRaw !== null;
-		const isArray = Array.isArray(retRaw);
-
-		if (isObject) {
-			results.push({ json: retRaw });
-		} else if (isArray) {
-			results.push(...retRaw.map((item: IDataObject) => ({ json: item })));
-		} else {
-			results.push({ json: retRaw });
+			);
+			results.push(...transformedResponse);
 		}
 	}
 

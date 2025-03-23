@@ -56,6 +56,8 @@ The Endpoint Path Select options are dynamically fetched from the respective ser
 
 If the path contains a replacable components ({ids} etc), use .replace("{ids}", "myvalue") to set the desired values.
 
+Endpoints containing "bulk" allow up to 100 calls to be combined into one, to be more efficient with rate limits. Construct the body for a single call in the node, and the node will automatically combine these into bulk calls, for bulk endpoints.
+
 ### Erply Trigger
 
 [These webhooks](https://wiki.erply.com/en/article/760-introduction) will be dynamically created/destroyed, so there's no need to create them manually before use.
