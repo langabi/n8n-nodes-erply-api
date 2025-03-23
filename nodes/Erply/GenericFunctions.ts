@@ -17,11 +17,19 @@ import axios from 'axios';
 
 import jmespath from 'jmespath';
 
+interface SessionCache {
+	sessionKey: string;
+	jwt: string;
+	expiresAt: number;
+}
+
+let sessionCache: Record<string, SessionCache> = {};
+
 //turns various data responses into either an object or array of objects
 export async function servicePostReceiveTransform(
 	this: IExecuteSingleFunctions,
 	items: INodeExecutionData[],
-	_response: IN8nHttpFullResponse,
+	response: IN8nHttpFullResponse,
 ): Promise<INodeExecutionData[]> {
 	const jmesPath = this.getNodeParameter('jmesPath') as string;
 	const fullResponse = this.getNodeParameter('includeHeaders') as boolean;
@@ -34,14 +42,14 @@ export async function servicePostReceiveTransform(
 		return [
 			{
 				json: {
-					headers: _response.headers,
-					body: _response.body,
+					headers: response.headers,
+					body: response.body,
 				},
 			},
 		];
 	}
 
-	const body = _response.body as IDataObject;
+	const body = response.body as IDataObject;
 
 	const retRaw = jmespath.search(body, jmesPath);
 
@@ -49,7 +57,7 @@ export async function servicePostReceiveTransform(
 		return [
 			{
 				json: {
-					headers: _response.headers,
+					headers: response.headers,
 					body: retRaw,
 				},
 			},
@@ -127,22 +135,28 @@ export async function getEndpointPaths(
 }
 
 export async function getSessionAuth(credentials: ICredentialDataDecryptedObject): Promise<any> {
-	// const url = encodeURI(`https://${credentials.clientCode}.erply.com/api?clientCode=${credentials.clientCode}&username=${credentials.username}&password=${credentials.password}&request=verifyUser&doNotGenerateIdentityToken=1`)
+	const cacheKey = `${credentials.clientCode}:${credentials.username}`;
+	const now = Date.now();
+
+	// Check if we have a valid cached session
+	if (sessionCache[cacheKey] && sessionCache[cacheKey].expiresAt > now) {
+		return {
+			sessionKey: sessionCache[cacheKey].sessionKey,
+			jwt: sessionCache[cacheKey].jwt,
+		};
+	}
+
+	// If not cached or expired, authenticate
+	let url;
+	if (credentials.authProxy) {
+		url = credentials.authProxy as string;
+	} else {
+		url = encodeURI(`https://${credentials.clientCode}.erply.com/api?clientCode=${credentials.clientCode}&username=${credentials.username}&password=${credentials.password}&request=verifyUser&doNotGenerateIdentityToken=1`)
+	}
 
 	let authResp;
-
-	// try {
-	// 	authResp = await axios.get(url, {
-	// 		method: 'POST'
-	// 	})
-	// } catch (error) {
-	// 	throw new Error('Could not authenticate', {
-	// 		cause: error
-	// 	})
-	// }
-
 	try {
-		authResp = await axios.get(credentials.authProxy as string, {
+		authResp = await axios.get(url, {
 			auth: {
 				username: credentials.username as string,
 				password: credentials.password as string,
@@ -158,9 +172,16 @@ export async function getSessionAuth(credentials: ICredentialDataDecryptedObject
 		throw new Error('Could not authenticate');
 	}
 
-	return {
+	// Cache the session for 45 minutes (Erply sessions typically last 1 hour)
+	sessionCache[cacheKey] = {
 		sessionKey: authResp.data.records[0].sessionKey,
 		jwt: authResp.data.records[0].token,
+		expiresAt: now + 45 * 60 * 1000,
+	};
+
+	return {
+		sessionKey: sessionCache[cacheKey].sessionKey,
+		jwt: sessionCache[cacheKey].jwt,
 	};
 }
 
@@ -187,4 +208,62 @@ export async function apiWebhookRequest(
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
+}
+
+export async function processBulkRequest(
+	this: IExecuteSingleFunctions,
+	items: INodeExecutionData[],
+	batchSize: number,
+	requestOptions: IHttpRequestOptions,
+): Promise<INodeExecutionData[]> {
+	const results: INodeExecutionData[] = [];
+
+	// Process items in batches
+	for (let i = 0; i < items.length; i += batchSize) {
+		const batch = items.slice(i, i + batchSize).map(item => item.json);
+
+		const batchRequestOptions = {
+			...requestOptions,
+			body: {
+				requests: batch
+			},
+		};
+
+		// Make the bulk request with authentication
+		const response = await this.helpers.httpRequestWithAuthentication.call(
+			this,
+			'erplyApi',
+			batchRequestOptions,
+		);
+
+		// Handle each response in the bulk response array
+		if (response.results && Array.isArray(response.results)) {
+			for (const singleResponse of response.results) {
+				const transformedResponse = await servicePostReceiveTransform.call(
+					this,
+					[{ json: singleResponse }],
+					{
+						headers: requestOptions.headers || {},
+						body: singleResponse,
+						statusCode: 200 // Assuming successful response
+					},
+				);
+				results.push(...transformedResponse);
+			}
+		} else {
+			// Fallback for non-array response (shouldn't happen with bulk API)
+			const transformedResponse = await servicePostReceiveTransform.call(
+				this,
+				[{ json: response }],
+				{
+					headers: requestOptions.headers || {},
+					body: response,
+					statusCode: 200
+				},
+			);
+			results.push(...transformedResponse);
+		}
+	}
+
+	return results;
 }
