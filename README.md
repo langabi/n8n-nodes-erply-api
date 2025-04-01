@@ -18,6 +18,17 @@ Erply is a multi store, retail chain and franchise point-of-sale platform.
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
+## Installation for Silvertree
+
+Publish to npm registry:
+`npm publish --registry=https://npm.sih.services`
+
+Install/update in n8n:
+- Log in with rancher
+- Find the two pods with names “n8n...“, and “n8n-worker...“, not the n8n-redis or n8n-psotgresql
+- On those pods, open a command prompt, and run on each of them run, e.g.,  (replacing the node name with the correct one for your case) `cd .n8n/nodes; npm install @silvertree/n8n-nodes-erply-api --registry=https://npm.sih.services`
+- “delete” the two pods; they’ll auto-recreate in around 30secs
+
 ## Credentials
 
 Ensure that your Erply user has API access enabled. Some service endpoints (such as CDN) may require a JWT to be used instead of the default sessionKey. Additionally some service endpoints may incorrectly return an authentication error when using a JWT instead of sessionKey. You will have more success if you use the auth without JWT for all requests unless you're specificially required to use it.
