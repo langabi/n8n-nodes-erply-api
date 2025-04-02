@@ -25,65 +25,78 @@ interface SessionCache {
 
 let sessionCache: Record<string, SessionCache> = {};
 
+// Helper function to create INodeExecutionData items from an array
+function mapArrayToNodeExecutionData(dataArray: any[]): INodeExecutionData[] {
+	if (!Array.isArray(dataArray)) {
+		// If it's somehow not an array at this point, wrap it as a single item
+		return [{ json: dataArray }];
+	}
+	return dataArray.map((item: any) => ({ json: item as IDataObject }));
+}
+
 //turns various data responses into either an object or array of objects
 export async function servicePostReceiveTransform(
 	this: IExecuteSingleFunctions,
 	items: INodeExecutionData[],
 	response: IN8nHttpFullResponse,
 ): Promise<INodeExecutionData[]> {
-	const jmesPath = this.getNodeParameter('jmesPath') as string;
-	const fullResponse = this.getNodeParameter('includeHeaders') as boolean;
+	const jmesPath = this.getNodeParameter('jmesPath', '') as string; // Default to empty string
+	const fullResponse = this.getNodeParameter('includeHeaders', false) as boolean; // Default to false
 
-	if (!jmesPath && !fullResponse) {
-		return items;
-	}
-
-	if (!jmesPath && fullResponse) {
-		return [
-			{
-				json: {
-					headers: response.headers,
-					body: response.body,
-				},
-			},
-		];
-	}
-
-	const body = response.body as IDataObject;
-
-	const retRaw = jmespath.search(body, jmesPath);
-
+	// If we want the full response including headers, handle it separately
 	if (fullResponse) {
+		const body = jmesPath ? jmespath.search(response.body as IDataObject, jmesPath) : response.body;
 		return [
 			{
 				json: {
 					headers: response.headers,
-					body: retRaw,
+					body: body,
 				},
 			},
 		];
 	}
 
-	const isObject = typeof retRaw === 'object' && !Array.isArray(retRaw) && retRaw !== null;
-	const isArray = Array.isArray(retRaw);
+	// If no JMESPath, decide based on the raw body type
+	if (!jmesPath) {
+		const body = response.body;
+		if (Array.isArray(body)) {
+			// Raw body is an array, map it
+			return mapArrayToNodeExecutionData(body);
+		} else {
+			// Raw body is not an array (likely object), return as single item
+			// Or return the original items if the body is empty/unexpected? Let's return the body.
+			return items.length > 0 ? [{ json: body as IDataObject, pairedItem: items[0].pairedItem }] : [{ json: body as IDataObject }];
 
-	if (isObject) {
-		return [
-			{
-				json: retRaw,
-			},
-		];
+		}
 	}
 
-	if (isArray) {
-		return retRaw.map((item: IDataObject) => {
-			return {
-				json: item,
-			} as INodeExecutionData;
-		});
+	// If we have a JMESPath, process the result
+	const body = response.body as IDataObject;
+	let retRaw = jmespath.search(body, jmesPath);
+
+	// Check for common patterns where the desired array might be nested
+	if (retRaw !== null && typeof retRaw === 'object' && !Array.isArray(retRaw)) {
+		// If retRaw is an object, check for common keys containing arrays
+		const commonKeys = ['data', 'records', 'results', 'items', 'value'];
+		for (const key of commonKeys) {
+			if (Array.isArray((retRaw as IDataObject)[key])) {
+				retRaw = (retRaw as IDataObject)[key];
+				break; // Use the first found array
+			}
+		}
+	} else if (Array.isArray(retRaw) && retRaw.length === 1 && Array.isArray(retRaw[0])) {
+		// If retRaw is an array containing a single array element, use the inner array
+		retRaw = retRaw[0];
 	}
 
-	return items;
+	// Now, map whatever retRaw is (hopefully the array, or a single object/primitive)
+	if (Array.isArray(retRaw)) {
+		return mapArrayToNodeExecutionData(retRaw);
+	} else {
+		// If retRaw is not an array after potential unwrapping, return as a single item
+		// Preserve pairing info if possible from the input item
+		return items.length > 0 ? [{ json: retRaw as IDataObject, pairedItem: items[0].pairedItem }] : [{ json: retRaw as IDataObject }];
+	}
 }
 
 export async function getServiceEndpoints(
@@ -220,46 +233,80 @@ export async function processBulkRequest(
 
 	// Process items in batches
 	for (let i = 0; i < items.length; i += batchSize) {
-		const batch = items.slice(i, i + batchSize).map(item => item.json);
+		const batchItems = items.slice(i, i + batchSize); // Keep original items for pairing
+		const batchJson = batchItems.map(item => item.json);
+
 
 		const batchRequestOptions = {
 			...requestOptions,
 			body: {
-				requests: batch
+				requests: batchJson // Assuming the API expects the JSON part in 'requests'
 			},
 		};
 
 		// Make the bulk request with authentication
-		const response = await this.helpers.httpRequestWithAuthentication.call(
-			this,
-			'erplyApi',
-			batchRequestOptions,
-		);
+		let bulkResponse: any; // Use 'any' for flexibility or define a more specific type
+		try {
+			bulkResponse = await this.helpers.httpRequestWithAuthentication.call(
+				this,
+				'erplyApi',
+				batchRequestOptions,
+			);
+		} catch (error) {
+			// Handle potential errors during the bulk request
+			// Maybe log the error and continue, or throw, or create error items
+			console.error(`Bulk request failed for batch starting at index ${i}:`, error);
+			// Optionally create error output items
+			// results.push(...batchItems.map(item => ({ json: { error: 'Bulk request failed' }, pairedItem: item.pairedItem })));
+			continue; // Continue to the next batch
+		}
+
 
 		// Handle each response in the bulk response array
-		if (response.results && Array.isArray(response.results)) {
-			for (const singleResponse of response.results) {
+		// Adjust 'bulkResponse.results' based on the actual API response structure
+		const responsesArray = bulkResponse?.results ?? bulkResponse; // Adapt as needed
+
+		if (Array.isArray(responsesArray) && responsesArray.length === batchItems.length) {
+			for (let j = 0; j < responsesArray.length; j++) {
+				const singleResponse = responsesArray[j];
+				const originalItem = batchItems[j]; // Get corresponding original item
+
+				// Create a mock IN8nHttpFullResponse for servicePostReceiveTransform
+				const mockHttpResponse: IN8nHttpFullResponse = {
+					headers: requestOptions.headers || {}, // Or extract from singleResponse if available
+					body: singleResponse,
+					statusCode: 200, // Or extract from singleResponse if available
+				};
+
+				// Pass the original item (or just its json/pairedItem) to maintain context/pairing
+				// Pass [{ json: singleResponse, pairedItem: originalItem.pairedItem }] if you want pairing
+				// Passing just [{json: singleResponse}] is simpler if pairing isn't strictly needed here
 				const transformedResponse = await servicePostReceiveTransform.call(
 					this,
-					[{ json: singleResponse }],
-					{
-						headers: requestOptions.headers || {},
-						body: singleResponse,
-						statusCode: 200 // Assuming successful response
-					},
+					[{ json: singleResponse as IDataObject, pairedItem: originalItem.pairedItem }], // Pass original pairing info
+					mockHttpResponse,
 				);
+				// Ensure pairing is maintained in the final results if needed
+				// transformedResponse might need adjustment if it doesn't preserve pairedItem
 				results.push(...transformedResponse);
 			}
 		} else {
-			// Fallback for non-array response (shouldn't happen with bulk API)
+			// Handle cases where the response structure isn't as expected (e.g., error, wrong format)
+			console.warn(`Unexpected bulk response structure for batch starting at index ${i}:`, bulkResponse);
+			// Optionally create error items for the whole batch
+			// results.push(...batchItems.map(item => ({ json: { error: 'Unexpected bulk response format' }, pairedItem: item.pairedItem })));
+
+			// Fallback: Try processing the whole bulkResponse as one
+			 const mockHttpResponse: IN8nHttpFullResponse = {
+					headers: requestOptions.headers || {},
+					body: bulkResponse,
+					statusCode: 200 // Or determine status code differently
+			};
 			const transformedResponse = await servicePostReceiveTransform.call(
 				this,
-				[{ json: response }],
-				{
-					headers: requestOptions.headers || {},
-					body: response,
-					statusCode: 200
-				},
+				// Decide how to handle input items here - maybe use the first item's pairing?
+				items.length > 0 ? [{ json: bulkResponse as IDataObject, pairedItem: items[0].pairedItem }] : [{ json: bulkResponse as IDataObject }],
+				mockHttpResponse,
 			);
 			results.push(...transformedResponse);
 		}
