@@ -26,8 +26,8 @@ Publish to npm registry:
 Install/update in n8n:
 - Log in with rancher
 - Find the two pods with names “n8n...“, and “n8n-worker...“, not the n8n-redis or n8n-psotgresql
-- On those pods, open a command prompt, and run on each of them run, e.g.,  (replacing the node name with the correct one for your case) `cd .n8n/nodes; npm install @silvertree/n8n-nodes-erply-api --registry=https://npm.sih.services`
-- “delete” the two pods; they’ll auto-recreate in around 30secs
+- On those pods, open a command prompt, and run on each of them run, e.g.,  (replacing the node name with the correct one for your case) `cd .n8n/nodes; npm install n8n-nodes-erply-api --registry=https://npm.sih.services`
+- restart the pods with `kubectl rollout restart deployment n8n -n sih-n8n` and `kubectl rollout restart deployment n8n-worker -n sih-n8n` (or “delete” the two pods; they’ll auto-recreate in around 30secs, but this feels intense)
 
 ## Credentials
 
