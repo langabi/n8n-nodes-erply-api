@@ -214,34 +214,26 @@ export class ErplyService implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
-		// Get node parameters
+		// Get common parameters
 		const service = this.getNodeParameter('service', 0) as string;
-		const endpointPath = this.getNodeParameter('endpointPath', 0) as string;
 		const method = this.getNodeParameter('method', 0) as 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT';
+		const endpointPath = this.getNodeParameter('endpointPath', 0) as string;
 		const bulkMode = this.getNodeParameter('bulkMode', 0, false) as boolean;
-		const batchSize = this.getNodeParameter('batchSize', 0, 100) as number;
-		const parameters = this.getNodeParameter('parameters', 0) as { parameter?: Array<{ key: string; value: string }> };
-
-		// Prepare base request options
-		const requestOptions: IHttpRequestOptions = {
-			url: `${service}${endpointPath}`,
-			method,
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			json: true,
-		};
-
-		// Add query parameters if any
-		if (parameters?.parameter) {
-			requestOptions.qs = {};
-			for (const param of parameters.parameter) {
-				requestOptions.qs[param.key] = param.value;
-			}
-		}
 
 		// Handle bulk operations
 		if (bulkMode && method !== 'GET' && endpointPath.includes('bulk')) {
+			const batchSize = this.getNodeParameter('batchSize', 0, 100) as number;
+
+			// Create base request options for bulk processing
+			const requestOptions: IHttpRequestOptions = {
+				url: `${service}${endpointPath}`,
+				method,
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				json: true,
+			};
+
 			const results = await processBulkRequest.call(
 				this as unknown as IExecuteSingleFunctions,
 				items,
@@ -252,16 +244,36 @@ export class ErplyService implements INodeType {
 		} else {
 			// Handle regular operations
 			for (let i = 0; i < items.length; i++) {
-				const item = items[i];
-				const currentRequestOptions = { ...requestOptions };
+				// Get item-specific parameters
+				const itemEndpointPath = this.getNodeParameter('endpointPath', i) as string;
+				const itemMethod = this.getNodeParameter('method', i) as 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT';
+				const parameters = this.getNodeParameter('parameters', i) as { parameter?: Array<{ key: string; value: string }> };
+
+				// Create request options specific to this item
+				const requestOptions: IHttpRequestOptions = {
+					url: `${service}${itemEndpointPath}`,
+					method: itemMethod,
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					json: true,
+				};
+
+				// Add query parameters if any
+				if (parameters?.parameter) {
+					requestOptions.qs = {};
+					for (const param of parameters.parameter) {
+						requestOptions.qs[param.key] = param.value;
+					}
+				}
 
 				// Add body for non-GET requests
-				if (method !== 'GET') {
+				if (itemMethod !== 'GET') {
 					const body = this.getNodeParameter('body', i) as string;
 					if (body) {
-						currentRequestOptions.body = JSON.parse(body);
+						requestOptions.body = JSON.parse(body);
 					} else {
-						currentRequestOptions.body = item.json;
+						requestOptions.body = items[i].json;
 					}
 				}
 
@@ -269,7 +281,7 @@ export class ErplyService implements INodeType {
 				const response = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'erplyApi',
-					currentRequestOptions,
+					requestOptions,
 				);
 
 				// Process the response using servicePostReceiveTransform
